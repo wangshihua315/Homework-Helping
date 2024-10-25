@@ -35,7 +35,8 @@ body {
     font-size: 1.5em;
 }
 
-.homework-entry {
+.homework-entry,
+.homework-main-entry {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
@@ -53,7 +54,8 @@ body {
     transition: opacity 0.3s ease, transform 0.3s ease;
 } */
 
-.homework-entry input {
+.homework-entry input,
+.homework-main-entry input {
     flex: 1;
     padding: 12px;
     margin-right: 10px;
@@ -62,7 +64,8 @@ body {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.homework-entry input:focus {
+.homework-entry input:focus,
+.homework-main-entry input:focus {
     border-color: #007B9A;
     box-shadow: 0 0 5px rgba(0, 123, 186, 0.5);
 }

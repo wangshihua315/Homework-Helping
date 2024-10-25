@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// 创建数据库
+// 连接 SQLite 数据库
 const db = new sqlite3.Database('./homework.db', (err) => {
     if (err) {
         console.error('数据库打开失败:', err.message);
@@ -31,28 +31,45 @@ const db = new sqlite3.Database('./homework.db', (err) => {
     }
 });
 
+app.get('/homework', (req, res) => {
+    db.get(`SELECT * FROM homework ORDER BY id DESC LIMIT 1`, (err, row) => {
+        if (err) {
+            return res.status(500).send('查询失败: ' + err.message);
+        }
+        
+        // 将数据库内容转换为 JSON 格式发送
+        if (row) {
+            res.json({
+                chinese: JSON.parse(row.chinese || '[]'),
+                math: JSON.parse(row.math || '[]'),
+                english: JSON.parse(row.english || '[]'),
+                science: JSON.parse(row.science || '[]'),
+                social: JSON.parse(row.social || '[]'),
+                other: JSON.parse(row.other || '[]')
+            });
+        } else {
+            res.json({});
+        }
+    });
+});
+
 // 保存作业内容的路由
 app.post('/homework', (req, res) => {
     const { chinese, math, english, science, social, other } = req.body;
 
-    // 检查是否已存在相同的作业内容
-    const checkSql = `SELECT COUNT(*) as count FROM homework WHERE chinese = ? AND math = ? AND english = ? AND science = ? AND social = ? AND other = ?`;
-    db.get(checkSql, [chinese, math, english, science, social, other], (err, row) => {
+    const sql = `INSERT INTO homework (chinese, math, english, science, social, other) VALUES (?, ?, ?, ?, ?, ?)`;
+    db.run(sql, [
+        JSON.stringify(chinese),
+        JSON.stringify(math),
+        JSON.stringify(english),
+        JSON.stringify(science),
+        JSON.stringify(social),
+        JSON.stringify(other)
+    ], function(err) {
         if (err) {
-            return res.status(500).send('查询失败: ' + err.message);
+            return res.status(500).send('保存失败: ' + err.message);
         }
-        if (row.count > 0) {
-            return res.status(400).send('该作业内容已存在'); // 如果已存在，返回错误
-        }
-
-        // 如果不存在，插入新作业内容
-        const sql = `INSERT INTO homework (chinese, math, english, science, social, other) VALUES (?, ?, ?, ?, ?, ?)`;
-        db.run(sql, [chinese, math, english, science, social, other], function(err) {
-            if (err) {
-                return res.status(500).send('保存失败: ' + err.message);
-            }
-            res.status(201).send('作业内容已保存');
-        });
+        res.status(201).send('作业内容已保存');
     });
 });
 
