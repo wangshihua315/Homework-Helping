@@ -2,6 +2,8 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +12,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
+
+// 设置 Multer 用于文件上传
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // 保存上传文件的文件夹
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // 使用时间戳作为文件名
+    }
+});
+const upload = multer({ storage: storage });
 
 // 连接 SQLite 数据库
 const db = new sqlite3.Database('./homework.db', (err) => {
@@ -31,6 +44,7 @@ const db = new sqlite3.Database('./homework.db', (err) => {
     }
 });
 
+// 获取作业
 app.get('/homework', (req, res) => {
     db.get(`SELECT * FROM homework ORDER BY id DESC LIMIT 1`, (err, row) => {
         if (err) {
@@ -54,7 +68,14 @@ app.get('/homework', (req, res) => {
 });
 
 // 保存作业内容的路由
-app.post('/homework', (req, res) => {
+app.post('/homework', upload.fields([
+    { name: 'chinese-file', maxCount: 1 },
+    { name: 'math-file', maxCount: 1 },
+    { name: 'english-file', maxCount: 1 },
+    { name: 'science-file', maxCount: 1 },
+    { name: 'social-file', maxCount: 1 },
+    { name: 'other-file', maxCount: 1 }
+]), (req, res) => {
     const { chinese, math, english, science, social, other } = req.body;
 
     const sql = `INSERT INTO homework (chinese, math, english, science, social, other) VALUES (?, ?, ?, ?, ?, ?)`;

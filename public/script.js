@@ -33,21 +33,26 @@ document.getElementById('save-button').addEventListener('click', async () => {
     const subjects = ['chinese', 'math', 'english', 'science', 'social', 'other'];
     const homeworkData = {};
 
+    const formData = new FormData();
+
     subjects.forEach(subject => {
         const mainHomeworkValue = document.getElementById(`${subject}-homework`).value.trim();
-        const additionalHomeworks = [...document.querySelectorAll(`#${subject}-subject .homework-entry input`)]
+        const additionalHomeworks = [...document.querySelectorAll(`#${subject}-subject .homework-entry input[type="text"]`)]
             .map(input => input.value.trim())
             .filter(Boolean);
         homeworkData[subject] = [mainHomeworkValue, ...additionalHomeworks];
+
+        // 添加文件到 FormData
+        const fileInput = document.getElementById(`${subject}-file`);
+        if (fileInput.files.length > 0) {
+            formData.append(`${subject}-file`, fileInput.files[0]);
+        }
     });
 
     try {
         const response = await fetch('/homework', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(homeworkData)
+            body: formData
         });
         if (!response.ok) throw new Error(await response.text());
 

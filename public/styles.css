@@ -40,20 +40,14 @@ body {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-    /* opacity: 0; 初始透明度为0 */
 }
 
-/* .homework-entry.show {
-    opacity: 1;
-    transform: translateY(0);
+/* 添加文件输入框样式 */
+.homework-entry input[type="file"] {
+    margin-right: 10px;
 }
 
-.homework-entry.fade-out {
-    opacity: 0;
-    transform: translateY(-10px); 
-    transition: opacity 0.3s ease, transform 0.3s ease;
-} */
-
+/* 其他输入框和按钮样式保持不变 */
 .homework-entry input,
 .homework-main-entry input {
     flex: 1;
@@ -83,6 +77,22 @@ body {
 
 .add-homework:hover {
     background-color: #007B9A;
+    transform: translateY(-2px);
+}
+
+.upload-button {
+    padding: 8px 15px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.upload-button:hover {
+    background-color: #45a049;
     transform: translateY(-2px);
 }
 
