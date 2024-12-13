@@ -4,6 +4,7 @@ const options = { year: 'numeric', month: 'long', day: 'numeric' };
 document.getElementById('today-date').innerText = today.toLocaleDateString('zh-CN', options);
 
 // 加载保存的作业内容
+// TODO(): Fix the display
 async function loadHomework() {
     try {
         const response = await fetch('/homework');
@@ -13,20 +14,32 @@ async function loadHomework() {
         const subjects = ['chinese', 'math', 'english', 'science', 'social', 'other'];
 
         subjects.forEach(subject => {
-            const homeworkEntries = homeworkData[subject] || [];
-            
-            // 将第一个作业内容放入主作业框
-            document.getElementById(`${subject}-homework`).value = homeworkEntries[0] || '';
+            const data = homeworkData[subject] || { tasks: [], files: [] };
 
-            // 加载其余的作业框
-            for (let i = 1; i < homeworkEntries.length; i++) {
-                addHomeworkEntry(subject, homeworkEntries[i]);
+            // 加载作业内容
+            const mainTask = data.tasks[0] || '';
+            document.getElementById(`${subject}-homework`).value = mainTask;
+
+            for (let i = 1; i < data.tasks.length; i++) {
+                addHomeworkEntry(subject, data.tasks[i]);
             }
+
+            // 加载文件列表
+            const fileList = document.getElementById(`${subject}-file`);
+            fileList.innerHTML = ''; // 清空现有列表
+            data.files.forEach(file => {
+                const fileLink = document.createElement('a');
+                fileLink.href = `/uploads/${file}`;
+                fileLink.textContent = file;
+                fileLink.download = file;
+                fileList.appendChild(fileLink);
+            });
         });
     } catch (error) {
         alert(error.message);
     }
 }
+
 
 // 保存作业内容到数据库
 document.getElementById('save-button').addEventListener('click', async () => {
@@ -36,18 +49,32 @@ document.getElementById('save-button').addEventListener('click', async () => {
     const formData = new FormData();
 
     subjects.forEach(subject => {
+        // 获取主作业内容和其他作业框
         const mainHomeworkValue = document.getElementById(`${subject}-homework`).value.trim();
         const additionalHomeworks = [...document.querySelectorAll(`#${subject}-subject .homework-entry input[type="text"]`)]
             .map(input => input.value.trim())
             .filter(Boolean);
-        homeworkData[subject] = [mainHomeworkValue, ...additionalHomeworks];
 
-        // 添加文件到 FormData
+        // 整理作业任务
+        homeworkData[subject] = {
+            tasks: [mainHomeworkValue, ...additionalHomeworks]
+        };
+
+        // 获取文件
         const fileInput = document.getElementById(`${subject}-file`);
-        if (fileInput.files.length > 0) {
-            formData.append(`${subject}-file`, fileInput.files[0]);
+        if (fileInput && fileInput.files.length > 0) {
+            // homeworkData[subject].files = [];
+            for (const file of fileInput.files) {
+                formData.append(`${subject}-file`, file);
+                // homeworkData[subject].files.push(file.name); // 添加文件名
+            }
+        } else {
+            homeworkData[subject].files = []; // 空文件数组
         }
     });
+
+    // 将 homeworkData 添加到 FormData 中
+    formData.append('homeworkData', JSON.stringify(homeworkData));
 
     try {
         const response = await fetch('/homework', {
@@ -61,6 +88,8 @@ document.getElementById('save-button').addEventListener('click', async () => {
         alert('保存失败：' + error.message);
     }
 });
+
+
 
 // 添加作业框
 document.querySelectorAll('.add-homework').forEach(button => {

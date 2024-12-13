@@ -16,13 +16,14 @@ app.use(express.static('public'));
 // 设置 Multer 用于文件上传
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // 保存上传文件的文件夹
+        cb(null, 'uploads'); // 上传文件夹路径
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // 使用时间戳作为文件名
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname)); // 确保文件名唯一
     }
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 // 连接 SQLite 数据库
 const db = new sqlite3.Database('./homework.db', (err) => {
@@ -47,19 +48,16 @@ const db = new sqlite3.Database('./homework.db', (err) => {
 // 获取作业
 app.get('/homework', (req, res) => {
     db.get(`SELECT * FROM homework ORDER BY id DESC LIMIT 1`, (err, row) => {
-        if (err) {
-            return res.status(500).send('查询失败: ' + err.message);
-        }
-        
-        // 将数据库内容转换为 JSON 格式发送
+        if (err) return res.status(500).send('查询失败: ' + err.message);
+
         if (row) {
             res.json({
-                chinese: JSON.parse(row.chinese || '[]'),
-                math: JSON.parse(row.math || '[]'),
-                english: JSON.parse(row.english || '[]'),
-                science: JSON.parse(row.science || '[]'),
-                social: JSON.parse(row.social || '[]'),
-                other: JSON.parse(row.other || '[]')
+                chinese: JSON.parse(row.chinese || '{"tasks": [], "files": []}'),
+                math: JSON.parse(row.math || '{"tasks": [], "files": []}'),
+                english: JSON.parse(row.english || '{"tasks": [], "files": []}'),
+                science: JSON.parse(row.science || '{"tasks": [], "files": []}'),
+                social: JSON.parse(row.social || '{"tasks": [], "files": []}'),
+                other: JSON.parse(row.other || '{"tasks": [], "files": []}')
             });
         } else {
             res.json({});
@@ -67,32 +65,41 @@ app.get('/homework', (req, res) => {
     });
 });
 
-// 保存作业内容的路由
-app.post('/homework', upload.fields([
-    { name: 'chinese-file', maxCount: 1 },
-    { name: 'math-file', maxCount: 1 },
-    { name: 'english-file', maxCount: 1 },
-    { name: 'science-file', maxCount: 1 },
-    { name: 'social-file', maxCount: 1 },
-    { name: 'other-file', maxCount: 1 }
-]), (req, res) => {
-    const { chinese, math, english, science, social, other } = req.body;
 
-    const sql = `INSERT INTO homework (chinese, math, english, science, social, other) VALUES (?, ?, ?, ?, ?, ?)`;
-    db.run(sql, [
-        JSON.stringify(chinese),
-        JSON.stringify(math),
-        JSON.stringify(english),
-        JSON.stringify(science),
-        JSON.stringify(social),
-        JSON.stringify(other)
-    ], function(err) {
-        if (err) {
-            return res.status(500).send('保存失败: ' + err.message);
-        }
-        res.status(201).send('作业内容已保存');
-    });
+
+// 保存作业内容的路由
+app.post('/homework', upload.any(), (req, res) => {
+    try {
+        const homeworkData = JSON.parse(req.body.homeworkData || '{}');
+        const files = req.files;
+
+        // 处理文件名和学科
+        files.forEach(file => {
+            const subject = file.fieldname.replace('-file', '');
+            if (!homeworkData[subject].files) homeworkData[subject].files = [];
+            homeworkData[subject].files.push(file.filename);
+        });
+
+        // 整合后的数据存储到数据库
+        const sql = `INSERT INTO homework (chinese, math, english, science, social, other) VALUES (?, ?, ?, ?, ?, ?)`;
+        db.run(sql, [
+            JSON.stringify(homeworkData.chinese || { tasks: [], files: [] }),
+            JSON.stringify(homeworkData.math || { tasks: [], files: [] }),
+            JSON.stringify(homeworkData.english || { tasks: [], files: [] }),
+            JSON.stringify(homeworkData.science || { tasks: [], files: [] }),
+            JSON.stringify(homeworkData.social || { tasks: [], files: [] }),
+            JSON.stringify(homeworkData.other || { tasks: [], files: [] })
+        ], function(err) {
+            if (err) return res.status(500).send('保存失败: ' + err.message);
+            res.status(201).send('作业内容已保存');
+        });
+    } catch (error) {
+        res.status(400).send('请求处理失败: ' + error.message);
+    }
 });
+
+
+
 
 // 关闭数据库连接
 process.on('SIGINT', () => {

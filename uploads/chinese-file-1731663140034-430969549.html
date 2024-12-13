@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录界面</title>
+    <style>
+        body {
+            background-color: #ADD8E6; /* 浅蓝色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-box {
+            background-color: white; /* 白色方块 */
+            border-radius: 20px; /* 圆矩形 */
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .login-btn {
+            background-color: #4CAF50; /* 绿色按钮 */
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .login-btn:hover {
+            background-color: #45a049; /* 按钮悬停效果 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>登录</h2>
+    <input type="text" placeholder="帐号" required>
+    <input type="password" placeholder="密码" required>
+    <button class="login-btn">登录</button>
+</div>
+
+</body>
+</html>
