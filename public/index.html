@@ -19,8 +19,12 @@
                     <input type="text" id="chinese-homework" placeholder="无" />
                     <button class="add-homework" data-subject="chinese">增加作业框</button>
                 </div>
-                <div class="homework-entry">
-                    <input type="file" accept="*" id="chinese-file" />
+                <div class="homework-entry-container">
+                    <!-- 作业框将在 JavaScript 动态插入 -->
+                </div>
+                <div class="file-upload">
+                    <input type="file" id="chinese-file-upload" />
+                    <div id="chinese-existing-files" class="existing-files"></div>
                 </div>
             </div>
             <div class="subject" id="math-subject">
@@ -30,7 +34,8 @@
                     <button class="add-homework" data-subject="math">增加作业框</button>
                 </div>
                 <div class="homework-entry">
-                    <input type="file" accept="*" id="math-file" />
+                    <input type="file" id="math-file-upload" />
+                    <div id="math-existing-files" class="existing-files"></div>
                 </div>
             </div>
             <div class="subject" id="english-subject">
@@ -40,7 +45,8 @@
                     <button class="add-homework" data-subject="english">增加作业框</button>
                 </div>
                 <div class="homework-entry">
-                    <input type="file" accept="*" id="english-file" />
+                    <input type="file" id="english-file-upload" />
+                    <div id="english-existing-files" class="existing-files"></div>
                 </div>
             </div>
             <div class="subject" id="science-subject">
@@ -50,7 +56,8 @@
                     <button class="add-homework" data-subject="science">增加作业框</button>
                 </div>
                 <div class="homework-entry">
-                    <input type="file" accept="*" id="science-file" />
+                    <input type="file" id="science-file-upload" />
+                    <div id="science-existing-files" class="existing-files"></div>
                 </div>
             </div>
             <div class="subject" id="social-subject">
@@ -60,7 +67,8 @@
                     <button class="add-homework" data-subject="social">增加作业框</button>
                 </div>
                 <div class="homework-entry">
-                    <input type="file" accept="*" id="social-file" />
+                    <input type="file" id="social-file-upload" />
+                    <div id="social-existing-files" class="existing-files"></div>
                 </div>
             </div>
             <div class="subject" id="other-subject">
@@ -70,7 +78,8 @@
                     <button class="add-homework" data-subject="other">增加作业框</button>
                 </div>
                 <div class="homework-entry">
-                    <input type="file" accept="*" id="other-file" />
+                    <input type="file" id="other-file-upload" />
+                    <div id="other-existing-files" class="existing-files"></div>
                 </div>
             </div>
             <button id="save-button">保存作业</button>

@@ -98,8 +98,43 @@ app.post('/homework', upload.any(), (req, res) => {
     }
 });
 
+app.post('/delete-file', (req, res) => {
+    const { subject, fileName } = req.body;
 
+    if (!subject || !fileName) {
+        return res.status(400).send('参数缺失');
+    }
 
+    const filePath = path.join(uploadsDir, fileName);
+    fs.unlink(filePath, err => {
+        if (err) {
+            console.error('删除文件失败:', err.message);
+            return res.status(500).send('文件删除失败');
+        }
+
+        // 从数据库中删除文件记录
+        db.get(`SELECT ${subject} FROM homework ORDER BY id DESC LIMIT 1`, (err, row) => {
+            if (err || !row) {
+                return res.status(500).send('无法更新数据库');
+            }
+
+            const data = JSON.parse(row[subject] || '{"tasks": [], "files": []}');
+            data.files = data.files.filter(file => file !== fileName);
+
+            db.run(
+                `UPDATE homework SET ${subject} = ? WHERE id = (SELECT id FROM homework ORDER BY id DESC LIMIT 1)`,
+                [JSON.stringify(data)],
+                err => {
+                    if (err) {
+                        console.error('更新数据库失败:', err.message);
+                        return res.status(500).send('数据库更新失败');
+                    }
+                    res.status(200).send('文件已删除');
+                }
+            );
+        });
+    });
+});
 
 // 关闭数据库连接
 process.on('SIGINT', () => {

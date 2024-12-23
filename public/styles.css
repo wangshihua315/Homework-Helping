@@ -128,3 +128,31 @@ body {
     background-color: #45a049;
     transform: translateY(-2px);
 }
+.file-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.file-entry a {
+    color: #007B9A;
+    text-decoration: none;
+}
+
+.file-entry a:hover {
+    text-decoration: underline;
+}
+
+.delete-file {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f44336;
+    color: white;
+    cursor: pointer;
+}
+
+.delete-file:hover {
+    background-color: #d32f2f;
+}

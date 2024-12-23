@@ -17,28 +17,73 @@ async function loadHomework() {
             const data = homeworkData[subject] || { tasks: [], files: [] };
 
             // 加载作业内容
-            const mainTask = data.tasks[0] || '';
-            document.getElementById(`${subject}-homework`).value = mainTask;
+            const homeworkInput = document.getElementById(`${subject}-homework`);
+            if (homeworkInput) {
+                const mainTask = data.tasks[0] || '';
+                homeworkInput.value = mainTask;
+            }
 
             for (let i = 1; i < data.tasks.length; i++) {
                 addHomeworkEntry(subject, data.tasks[i]);
             }
 
-            // 加载文件列表
-            const fileList = document.getElementById(`${subject}-file`);
-            fileList.innerHTML = ''; // 清空现有列表
-            data.files.forEach(file => {
-                const fileLink = document.createElement('a');
-                fileLink.href = `/uploads/${file}`;
-                fileLink.textContent = file;
-                fileLink.download = file;
-                fileList.appendChild(fileLink);
-            });
+            // 处理文件上传和显示
+            const fileUploadInput = document.getElementById(`${subject}-file-upload`);
+            const existingFileContainer = document.getElementById(`${subject}-existing-files`);
+
+            if (fileUploadInput && existingFileContainer) {
+                existingFileContainer.innerHTML = ''; // 清空现有文件显示容器
+
+                if (data.files.length > 0) {
+                    // 存在已上传文件，隐藏文件选择器，显示文件列表
+                    fileUploadInput.style.display = 'none';
+
+                    data.files.forEach(file => {
+                        const fileLink = document.createElement('a');
+                        fileLink.href = `/uploads/${file}`;
+                        fileLink.textContent = file;
+                        fileLink.download = file;
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = '删除';
+                        deleteButton.classList.add('delete-file');
+                        deleteButton.dataset.fileName = file;
+
+                        existingFileContainer.appendChild(fileLink);
+                        existingFileContainer.appendChild(deleteButton);
+
+                        // 删除按钮逻辑
+                        deleteButton.addEventListener('click', async () => {
+                            try {
+                                const deleteResponse = await fetch(`/homework/${subject}/file`, {
+                                    method: 'DELETE',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ file }),
+                                });
+
+                                if (!deleteResponse.ok) throw new Error('删除文件失败');
+
+                                // 重新加载作业数据
+                                loadHomework();
+                            } catch (error) {
+                                alert(error.message);
+                            }
+                        });
+                    });
+                } else {
+                    // 无文件，显示文件选择器
+                    fileUploadInput.style.display = 'block';
+                }
+            } else {
+                console.warn(`元素缺失：${subject}-file-upload 或 ${subject}-existing-files`);
+            }
         });
     } catch (error) {
         alert(error.message);
     }
 }
+
+
 
 
 // 保存作业内容到数据库
