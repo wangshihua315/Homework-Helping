@@ -4,9 +4,11 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const uploadsDir = path.join(__dirname, 'uploads');
 
 // 中间件
 app.use(cors());
@@ -99,14 +101,15 @@ app.post('/homework', upload.any(), (req, res) => {
     }
 });
 
-app.post('/delete-file', (req, res) => {
-    const { subject, fileName } = req.body;
+app.delete('/homework/:subject/file', (req, res) => {
+    const { subject } = req.params; // 从路径参数获取学科
+    const { file } = req.body; // 从请求体获取文件名
 
-    if (!subject || !fileName) {
+    if (!subject || !file) {
         return res.status(400).send('参数缺失');
     }
 
-    const filePath = path.join(uploadsDir, fileName);
+    const filePath = path.join(uploadsDir, file);
     fs.unlink(filePath, err => {
         if (err) {
             console.error('删除文件失败:', err.message);
@@ -120,7 +123,7 @@ app.post('/delete-file', (req, res) => {
             }
 
             const data = JSON.parse(row[subject] || '{"tasks": [], "files": []}');
-            data.files = data.files.filter(file => file !== fileName);
+            data.files = data.files.filter(existingFile => existingFile !== file);
 
             db.run(
                 `UPDATE homework SET ${subject} = ? WHERE id = (SELECT id FROM homework ORDER BY id DESC LIMIT 1)`,
@@ -136,6 +139,7 @@ app.post('/delete-file', (req, res) => {
         });
     });
 });
+
 
 // 关闭数据库连接
 process.on('SIGINT', () => {
