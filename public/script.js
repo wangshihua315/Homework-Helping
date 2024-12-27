@@ -28,7 +28,7 @@ async function loadHomework() {
             }
 
             // 处理文件上传和显示
-            const fileUploadInput = document.getElementById(`${subject}-file-upload`);
+            const fileUploadInput = document.getElementById(`${subject}-file`);
             const existingFileContainer = document.getElementById(`${subject}-existing-files`);
 
             if (fileUploadInput && existingFileContainer) {
@@ -75,7 +75,7 @@ async function loadHomework() {
                     fileUploadInput.style.display = 'block';
                 }
             } else {
-                console.warn(`元素缺失：${subject}-file-upload 或 ${subject}-existing-files`);
+                console.warn(`元素缺失：${subject}-file 或 ${subject}-existing-files`);
             }
         });
     } catch (error) {

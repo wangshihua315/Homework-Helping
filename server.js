@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads')); // 暴露 uploads 文件夹
 
 // 设置 Multer 用于文件上传
 const storage = multer.diskStorage({
